@@ -1,0 +1,24 @@
+[
+  {
+    "namePrefix": "Pulse",
+    "nameSuffix": "HSM",
+    "version": "1.2.1",
+    "description": "Tiny hierarchical state machine — nested states, event bubbling, and timed transitions in a single header. No heap. No RTTI.",
+    "tags": ["HSM", "AVR", "ESP32", "RP2040", "STM32", "SAMD"],
+    "docsUrl": "https://pulsecoreengineering.github.io/pulseHSM/",
+    "repoUrl": "https://github.com/pulsecoreengineering/pulseHSM",
+    "releaseTag": "1.2.1",
+    "pioName": "pulsecoreengineering/PulseHSM"
+  },
+  {
+    "namePrefix": "Pulse",
+    "nameSuffix": "CoAP",
+    "version": "1.0.0",
+    "description": "No-heap CoAP client and server for constrained IoT devices. Fixed-buffer, zero dynamic allocation, with Observe, block-wise transfer, resource discovery, and DTLS/CoAPs via mbedTLS.",
+    "tags": ["CoAP", "IoT", "UDP", "ESP32", "DTLS", "RFC 7252"],
+    "docsUrl": null,
+    "repoUrl": "https://github.com/pulsecoreengineering/PulseCoAP",
+    "releaseTag": "1.0.0",
+    "pioName": "pulsecoreengineering/PulseCoAP"
+  }
+]

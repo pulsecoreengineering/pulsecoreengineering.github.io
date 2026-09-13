@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PulseCore Engineering</title>
+  <meta name="description" content="Open-source embedded C++ libraries. Lean, static, and interrupt-safe — for the hardware that can't afford overhead.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+  <style>
+    /* ── Tokens ─────────────────────────────────────────── */
+    :root {
+      --bg:          #080d1a;
+      --surface:     #0e1528;
+      --border:      #1a2440;
+      --text:        #dde4f0;
+      --muted:       #4d5a72;
+      --accent:      #00d68f;
+      --accent-dim:  #00965f;
+      --accent-glow: rgba(0, 214, 143, 0.12);
+      --mono:        'IBM Plex Mono', 'Courier New', monospace;
+      --sans:        'IBM Plex Sans', system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg:          #f3f6fb;
+        --surface:     #ffffff;
+        --border:      #dce3ef;
+        --text:        #0e1528;
+        --muted:       #6b7a96;
+        --accent:      #006b58;
+        --accent-dim:  #004d3f;
+        --accent-glow: rgba(0, 107, 88, 0.08);
+      }
+    }
+    :root[data-theme="light"] {
+      --bg:          #f3f6fb;
+      --surface:     #ffffff;
+      --border:      #dce3ef;
+      --text:        #0e1528;
+      --muted:       #6b7a96;
+      --accent:      #006b58;
+      --accent-dim:  #004d3f;
+      --accent-glow: rgba(0, 107, 88, 0.08);
+    }
+
+    /* ── Reset ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 1rem;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-dim); }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; } }
+
+    /* ── Nav ────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .nav-brand span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-gh {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* ── Hero ───────────────────────────────────────────── */
+    .hero {
+      padding: 9rem 2rem 4rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 {
+      font-family: var(--mono);
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      text-wrap: balance;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── Pulse canvas ───────────────────────────────────── */
+    .pulse-wrap {
+      margin-bottom: 3rem;
+      height: 48px;
+      position: relative;
+    }
+    canvas#pulse {
+      display: block;
+      width: 100%;
+      height: 48px;
+    }
+
+    /* ── Section ────────────────────────────────────────── */
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Library grid ───────────────────────────────────── */
+    .lib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /* ── Library card ───────────────────────────────────── */
+    .lib-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .lib-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 4px 24px var(--accent-glow);
+    }
+    .lib-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .lib-name {
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .lib-name span { color: var(--accent); }
+    .lib-version {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      border-radius: 3px;
+      padding: 0.18em 0.5em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .lib-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .lib-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .lib-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.2em 0.5em;
+    }
+    .lib-links {
+      display: flex;
+      gap: 1rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .lib-link {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: color 0.15s;
+    }
+    .lib-link:hover { color: var(--accent); }
+    .lib-link svg { flex-shrink: 0; }
+
+    /* ── Coming soon card ───────────────────────────────── */
+    .lib-card.coming {
+      border-style: dashed;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .lib-card.coming .lib-name { color: var(--muted); }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+    }
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--accent); }
+
+    /* ── CTA button ─────────────────────────────────────── */
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .btn-watch {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--bg);
+      background: var(--accent);
+      border: none;
+      border-radius: 4px;
+      padding: 0.55em 1.1em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s, box-shadow 0.15s;
+    }
+    .btn-watch:hover { opacity: 0.88; color: var(--bg); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .btn-watch svg { flex-shrink: 0; fill: currentColor; }
+    .cta-hint {
+      font-family: var(--mono);
+      font-size: 0.73rem;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── About section ──────────────────────────────────── */
+    .about-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    @media (max-width: 600px) { .about-body { grid-template-columns: 1fr; } }
+    .about-text {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    .about-text p + p { margin-top: 0.9rem; }
+    .principles {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .principles li {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+    }
+    .principles li::before {
+      content: '//';
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ── Stars badge ────────────────────────────────────── */
+    .lib-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+    .lib-stars {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .lib-stars svg { fill: currentColor; }
+
+    /* ── Platform grid ──────────────────────────────────── */
+    .platform-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .platform-chip {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 3px;
+      padding: 0.3em 0.7em;
+      white-space: nowrap;
+    }
+    .platform-note {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 0.25rem;
+    }
+
+    /* ── Install section ────────────────────────────────── */
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 600px) { .install-grid { grid-template-columns: 1fr; } }
+    .install-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .install-block-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .install-block-title {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .copy-btn {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.2em 0.6em;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+    .install-body {
+      padding: 1rem;
+    }
+    .install-step {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .install-step + .install-step { margin-top: 0.35rem; }
+    .install-step-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      width: 1.2rem;
+    }
+    .install-code {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.65rem 0.9rem;
+      margin-top: 0.75rem;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    /* ── GitHub icon ─────────────────────────────────────── */
+    .gh-icon { width: 16px; height: 16px; fill: currentColor; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-brand"><span>Pulse</span>Core Engineering</a>
+    <ul class="nav-links">
+      <li>
+        <a href="https://github.com/pulsecoreengineering" class="nav-gh" target="_blank" rel="noopener">
+          <svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+              0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+              -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87
+              2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+              0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12
+              0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09
+              2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+              .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95
+              .29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+              0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="hero">
+    <p class="hero-eyebrow">// pulsecoreengineering</p>
+    <h1>Libraries for hardware<br>that can't afford <em>overhead.</em></h1>
+    <p class="hero-sub">
+      Open-source embedded C++ — static allocation, interrupt-safe,
+      zero heap. Built for AVR, ESP32, RP2040, STM32, and SAMD.
+    </p>
+    <div class="cta-row">
+      <a href="https://github.com/pulsecoreengineering" class="btn-watch" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+            -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87
+            2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+            0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12
+            0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09
+            2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+            .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95
+            .29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+            0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        Watch on GitHub
+      </a>
+      <span class="cta-hint">Get notified when new libraries drop.</span>
+    </div>
+    <div class="pulse-wrap">
+      <canvas id="pulse"></canvas>
+    </div>
+  </div>
+
+  <section class="section">
+    <p class="section-label">// about</p>
+    <div class="about-body">
+      <div class="about-text">
+        <p>
+          PulseCore Engineering builds embedded C++ utilities for firmware developers
+          who can't compromise on resource constraints. Every library in this org
+          is designed to run on the smallest MCUs without heap allocation,
+          dynamic dispatch, or runtime type information.
+        </p>
+        <p>
+          The focus is correctness first: well-defined semantics, interrupt-safe
+          primitives, and deterministic timing — the kind of guarantees firmware
+          needs but general-purpose libraries rarely provide.
+        </p>
+      </div>
+      <ul class="principles">
+        <li>Zero heap — fully static, no malloc ever</li>
+        <li>Interrupt-safe — designed for ISR producers</li>
+        <li>No RTTI, no exceptions, no dynamic_cast</li>
+        <li>Single-header — drop in and compile</li>
+        <li>Deterministic — O(1) or O(depth) everywhere</li>
+        <li>Tested on AVR, ARM Cortex-M, RISC-V</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="section-label">// platform support</p>
+    <p class="platform-note">
+      Runs on any Arduino-compatible MCU. Fully tested on:
+    </p>
+    <div class="platform-row">
+      <span class="platform-chip">ATmega328P</span>
+      <span class="platform-chip">ATmega2560</span>
+      <span class="platform-chip">ESP32</span>
+      <span class="platform-chip">ESP32-S3</span>
+      <span class="platform-chip">RP2040</span>
+      <span class="platform-chip">STM32F1</span>
+      <span class="platform-chip">STM32F4</span>
+      <span class="platform-chip">SAMD21</span>
+      <span class="platform-chip">SAMD51</span>
+      <span class="platform-chip">nRF52840</span>
+      <span class="platform-chip">Teensy 4.x</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="section-label">// libraries</p>
+    <div id="lib-grid" class="lib-grid">
+      <p style="color:var(--muted);font-family:var(--mono);font-size:.85rem">Loading…</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      &copy; 2025 PulseCore Engineering &nbsp;·&nbsp;
+      <a href="https://github.com/pulsecoreengineering" target="_blank" rel="noopener">github.com/pulsecoreengineering</a>
+    </p>
+  </footer>
+
+  <script>
+    // ── Oscilloscope pulse animation ─────────────────────
+    const canvas = document.getElementById('pulse');
+    const ctx    = canvas.getContext('2d');
+    let   raf, t = 0;
+
+    function accent() {
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = document.documentElement.getAttribute('data-theme');
+      const isDark = theme === 'dark' || (!theme && dark);
+      return isDark ? '#00d68f' : '#006b58';
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const w   = canvas.parentElement.clientWidth;
+      const h   = 48;
+      canvas.width  = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width  = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function draw() {
+      const w = canvas.clientWidth;
+      const h = 48;
+      ctx.clearRect(0, 0, w, h);
+
+      const col = accent();
+      ctx.strokeStyle = col;
+      ctx.lineWidth   = 1.5;
+      ctx.shadowColor = col;
+      ctx.shadowBlur  = 6;
+      ctx.beginPath();
+
+      const segments = 5;
+      const segW     = w / segments;
+
+      for (let i = 0; i <= segments; i++) {
+        const x0 = i * segW;
+        const x1 = x0 + segW * 0.2;
+        const x2 = x0 + segW * 0.4;
+        const x3 = x0 + segW * 0.9;
+        const cy = h / 2;
+        const amp = 14;
+        const phase = (t + i * 0.7) % (Math.PI * 2);
+        const peak  = cy - amp * Math.sin(phase);
+
+        if (i === 0) ctx.moveTo(x0, cy);
+
+        // low → rise
+        ctx.lineTo(x1, cy);
+        // pulse up
+        ctx.lineTo(x1, peak);
+        ctx.lineTo(x2, peak);
+        // fall back
+        ctx.lineTo(x2, cy);
+        ctx.lineTo(x3, cy);
+      }
+
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      t += 0.022;
+      raf = requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', () => { resize(); });
+    resize();
+    draw();
+
+    // ── Library cards ────────────────────────────────────
+    (async function renderLibraries() {
+      const grid = document.getElementById('lib-grid');
+      let libs;
+      try {
+        libs = await fetch('./libraries.json').then(r => r.json());
+      } catch(e) {
+        grid.innerHTML = '<p style="color:var(--muted);font-family:var(--mono);font-size:.85rem">Failed to load libraries.</p>';
+        return;
+      }
+
+      const P = {
+        gh:   'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z',
+        doc:  'M3.75 2h3.5a.75.75 0 010 1.5h-3.5a.25.25 0 00-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25v-3.5a.75.75 0 011.5 0v3.5A1.75 1.75 0 0112.25 14h-8.5A1.75 1.75 0 012 12.25v-8.5C2 2.784 2.784 2 3.75 2zm6.854-1h4.146a.25.25 0 01.25.25v4.146a.25.25 0 01-.427.177L13.03 4.03 9.28 7.78a.75.75 0 01-1.06-1.06l3.75-3.75-1.543-1.543A.25.25 0 0110.604 1z',
+        pio:  'M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 010-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8z',
+        star: 'M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z'
+      };
+      function icon(p, s) { s=s||12; return `<svg width="${s}" height="${s}" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="${p}"/></svg>`; }
+
+      grid.innerHTML = libs.map(lib => {
+        const ghPath = lib.repoUrl.replace('https://github.com/', '');
+        const starId = 'stars-' + ghPath.replace('/', '-');
+        const tags   = lib.tags.map(t => `<span class="lib-tag">${t}</span>`).join('');
+        const docs   = lib.docsUrl
+          ? `<a class="lib-link" href="${lib.docsUrl}" target="_blank" rel="noopener">${icon(P.doc)} Docs</a>`
+          : '';
+        const pio    = lib.pioName
+          ? `<a class="lib-link" href="https://registry.platformio.org/libraries/${lib.pioName}" target="_blank" rel="noopener">${icon(P.pio)} PlatformIO</a>`
+          : '';
+        return `<div class="lib-card">
+  <div class="lib-card-head">
+    <span class="lib-name"><span>${lib.namePrefix}</span>${lib.nameSuffix}</span>
+    <div class="lib-card-meta">
+      <span class="lib-stars" id="${starId}">${icon(P.star,11)}<span>–</span></span>
+      <span class="lib-version">v${lib.version}</span>
+    </div>
+  </div>
+  <p class="lib-desc">${lib.description}</p>
+  <div class="lib-tags">${tags}</div>
+  <div class="lib-links">
+    <a class="lib-link" href="${lib.repoUrl}" target="_blank" rel="noopener">${icon(P.gh)} GitHub</a>
+    ${docs}${pio}
+  </div>
+</div>`;
+      }).join('');
+
+      libs.forEach(lib => {
+        const ghPath = lib.repoUrl.replace('https://github.com/', '');
+        const starId = 'stars-' + ghPath.replace('/', '-');
+        fetch('https://api.github.com/repos/' + ghPath)
+          .then(r => r.ok ? r.json() : null)
+          .then(d => {
+            if (!d) return;
+            const el = document.getElementById(starId);
+            if (!el) return;
+            const n = d.stargazers_count;
+            el.querySelector('span').textContent = n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
+          })
+          .catch(() => {});
+      });
+    })();
+  </script>
+</body>
+</html>
