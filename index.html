@@ -500,8 +500,8 @@
     <p class="hero-eyebrow">// pulsecoreengineering</p>
     <h1>Libraries for hardware<br>that can't afford <em>overhead.</em></h1>
     <p class="hero-sub">
-      Open-source embedded C++ — static allocation, interrupt-safe,
-      zero heap. Built for AVR, ESP32, RP2040, STM32, and SAMD.
+      Open-source C++ libraries for embedded systems — lean, static,
+      and built to the kind of standard that firmware actually demands.
     </p>
     <div class="cta-row">
       <a href="https://github.com/pulsecoreengineering" class="btn-watch" target="_blank" rel="noopener">
@@ -531,45 +531,24 @@
     <div class="about-body">
       <div class="about-text">
         <p>
-          PulseCore Engineering builds embedded C++ utilities for firmware developers
-          who can't compromise on resource constraints. Every library in this org
-          is designed to run on the smallest MCUs without heap allocation,
-          dynamic dispatch, or runtime type information.
+          PulseCore Engineering makes open-source C++ libraries for embedded systems —
+          built around one principle: firmware deserves the same quality of tooling
+          that application software takes for granted.
         </p>
         <p>
-          The focus is correctness first: well-defined semantics, interrupt-safe
-          primitives, and deterministic timing — the kind of guarantees firmware
-          needs but general-purpose libraries rarely provide.
+          Every library ships with a clear contract, predictable resource use, and
+          no hidden costs. No heap. No runtime surprises. Just code that does
+          exactly what it says, on whatever hardware you're running.
         </p>
       </div>
       <ul class="principles">
-        <li>Zero heap — fully static, no malloc ever</li>
-        <li>Interrupt-safe — designed for ISR producers</li>
-        <li>No RTTI, no exceptions, no dynamic_cast</li>
-        <li>Single-header — drop in and compile</li>
-        <li>Deterministic — O(1) or O(depth) everywhere</li>
-        <li>Tested on AVR, ARM Cortex-M, RISC-V</li>
+        <li>No dynamic allocation — static by design</li>
+        <li>Predictable resource use — known at compile time</li>
+        <li>No RTTI, no exceptions, no overhead you didn't ask for</li>
+        <li>Works across AVR, ARM Cortex-M, RISC-V and beyond</li>
+        <li>Compatible with Arduino, PlatformIO, and bare-metal toolchains</li>
+        <li>Built to last — stable APIs, permissive license, open development</li>
       </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <p class="section-label">// platform support</p>
-    <p class="platform-note">
-      Runs on any Arduino-compatible MCU. Fully tested on:
-    </p>
-    <div class="platform-row">
-      <span class="platform-chip">ATmega328P</span>
-      <span class="platform-chip">ATmega2560</span>
-      <span class="platform-chip">ESP32</span>
-      <span class="platform-chip">ESP32-S3</span>
-      <span class="platform-chip">RP2040</span>
-      <span class="platform-chip">STM32F1</span>
-      <span class="platform-chip">STM32F4</span>
-      <span class="platform-chip">SAMD21</span>
-      <span class="platform-chip">SAMD51</span>
-      <span class="platform-chip">nRF52840</span>
-      <span class="platform-chip">Teensy 4.x</span>
     </div>
   </section>
 
