@@ -16,7 +16,7 @@
     "version": "1.0.0",
     "description": "No-heap CoAP client and server for constrained IoT devices. Fixed-buffer, zero dynamic allocation, with Observe, block-wise transfer, resource discovery, and DTLS/CoAPs via mbedTLS.",
     "tags": ["CoAP", "IoT", "UDP", "ESP32", "DTLS", "RFC 7252"],
-    "docsUrl": null,
+    "docsUrl": "https://pulsecoreengineering.github.io/PulseCoAP/",
     "repoUrl": "https://github.com/pulsecoreengineering/PulseCoAP",
     "releaseTag": "1.0.0",
     "pioName": "pulsecoreengineering/PulseCoAP"
